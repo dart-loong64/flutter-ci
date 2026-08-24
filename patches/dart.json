@@ -1,0 +1,12 @@
+{
+  "deps": [
+    {
+      "path": "engine/src/flutter/third_party/dart",
+      "patches": [
+        "dart/0001-fix-unwinding-records-for-windows-linux-risc-v64-cross-build.patch",
+        "dart/0002-fix-unwinding-records-for-windows-linux-loong64-cross-build.patch",
+        "dart/0003-fix-macos-loong64-simulator-build.patch"
+      ]
+    }
+  ]
+}

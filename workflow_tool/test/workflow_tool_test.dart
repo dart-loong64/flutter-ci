@@ -61,6 +61,7 @@ void main() {
           'armv7-generic',
           'aarch64-generic',
           'x64-generic',
+          'loong64-generic',
           'riscv64-generic',
         ]) ...[
           allOf(
@@ -86,6 +87,7 @@ void main() {
           'armv7-generic',
           'aarch64-generic',
           'x64-generic',
+          'loong64-generic',
           'riscv64-generic',
         ]) ...[
           allOf(
@@ -115,6 +117,7 @@ void main() {
           'armv7-generic',
           'aarch64-generic',
           'x64-generic',
+          'loong64-generic',
           'riscv64-generic',
         ]) ...[
           allOf(
@@ -148,10 +151,11 @@ void main() {
           'armv7-generic',
           'aarch64-generic',
           'x64-generic',
+          'loong64-generic',
           'riscv64-generic',
         ])
           for (final runtimeMode in ['release', 'profile'])
-            for (final os in ['macos-13', 'ubuntu-latest'])
+            for (final os in ['macos-15-intel', 'ubuntu-latest'])
               allOf(
                 containsPair('artifact-name', artifact),
                 containsPair('runtime-mode', runtimeMode),
@@ -198,6 +202,7 @@ void main() {
           'armv7-generic',
           'aarch64-generic',
           'x64-generic',
+          'loong64-generic',
           'riscv64-generic',
           'pi3',
           'pi3-64',
@@ -263,10 +268,16 @@ void main() {
       everyElement(
         allOfOrNone(
           containsPair('cpu', anyOf('arm', 'arm64')),
-          containsPair('arm-cpu',
-              anyOf('generic', 'cortex-a53+nocrypto', 'cortex-a72+nocrypto')),
           containsPair(
-              'arm-tune', anyOf('generic', 'cortex-a53', 'cortex-a72')),
+              'arm-cpu',
+              anyOf(
+                'generic',
+                'cortex-a53+nocrypto',
+                'cortex-a72+nocrypto',
+                'cortex-a76',
+              )),
+          containsPair('arm-tune',
+              anyOf('generic', 'cortex-a53', 'cortex-a72', 'cortex-a76')),
         ),
       ),
     );
@@ -316,6 +327,17 @@ void main() {
     );
   });
 
+  test('any loong64 host gen_snapshot build job is present', () {
+    final matrix = generateMatrix();
+
+    expect(
+      matrix,
+      anyElement(
+        containsPair('build-loong64-gen-snapshot', true),
+      ),
+    );
+  });
+
   test('any riscv64 host gen_snapshot build job is present', () {
     final matrix = generateMatrix();
 
@@ -330,8 +352,8 @@ void main() {
   test('every job has a known runner image set', () {
     final matrix = generateMatrix();
 
-    final anyKnownRunnerImage =
-        anyOf('ubuntu-latest', 'macos-latest', 'macos-13', 'windows-latest', 'windows-2022');
+    final anyKnownRunnerImage = anyOf('ubuntu-latest', 'macos-latest',
+        'macos-15-intel', 'windows-latest', 'windows-2022');
 
     expect(
       matrix,
@@ -362,13 +384,10 @@ void main() {
     final matrix = generateMatrix();
 
     expect(
-      matrix,
-      allOf([
-        for (final arch in ['arm', 'arm64', 'x64', 'riscv64'])
-          anyElement(
-            containsPair('cpu', arch)
-          )
-      ])
-    );
+        matrix,
+        allOf([
+          for (final arch in ['arm', 'arm64', 'x64', 'loong64', 'riscv64'])
+            anyElement(containsPair('cpu', arch))
+        ]));
   });
 }

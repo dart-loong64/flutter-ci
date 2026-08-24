@@ -11,13 +11,14 @@ diff --git a/engine/src/flutter/BUILD.gn b/engine/src/flutter/BUILD.gn
 index 7a4d1eaa..3b048fa7 100644
 --- a/engine/src/flutter/BUILD.gn
 +++ b/engine/src/flutter/BUILD.gn
-@@ -103,6 +103,12 @@ group("flutter") {
+@@ -103,6 +103,13 @@ group("flutter") {
    if (!is_fuchsia && !is_qnx) {
      public_deps += [ "//flutter/lib/snapshot:generate_snapshot_bins" ]
  
 +    if (host_os == "linux") {
 +      public_deps += [ "$dart_src/runtime/bin:gen_snapshot(//build/toolchain/linux:clang_x64)" ]
 +      public_deps += [ "$dart_src/runtime/bin:gen_snapshot(//build/toolchain/linux:clang_arm64)" ]
++      public_deps += [ "$dart_src/runtime/bin:gen_snapshot(//build/toolchain/linux:clang_loong64)" ]
 +      public_deps += [ "$dart_src/runtime/bin:gen_snapshot(//build/toolchain/linux:clang_arm)" ]
 +    }
 +

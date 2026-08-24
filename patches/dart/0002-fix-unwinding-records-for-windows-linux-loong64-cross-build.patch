@@ -1,0 +1,80 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Flutter CI <flutter-ci@example.invalid>
+Date: Wed, 2 Sep 2026 00:00:00 +0800
+Subject: [PATCH] fix: Windows/macOS -> Linux Loong64 gen_snapshot build
+
+The Loong64 target is Linux-only, but gen_snapshot is also cross-built on
+Windows and macOS. The host-side cache flush and unwinding-record
+implementations must therefore be compilable on those host operating systems.
+---
+ runtime/platform/unwinding_records_win.cc | 7 +++++--
+ runtime/vm/cpu_loong64.cc                 | 14 ++++++++++++++
+ 2 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/runtime/platform/unwinding_records_win.cc b/runtime/platform/unwinding_records_win.cc
+index 3a1ebf8..649ebf2 100644
+--- a/runtime/platform/unwinding_records_win.cc
++++ b/runtime/platform/unwinding_records_win.cc
+@@ -18,6 +18,9 @@ const intptr_t kReservedUnwindingRecordsSizeBytes = 4 * KB;
+ #elif defined(TARGET_ARCH_RISCV64)
+ // Same as what "unwinding_records.cc" falls back to on unsupported platforms.
+ const intptr_t kReservedUnwindingRecordsSizeBytes = 0;
++#elif defined(TARGET_ARCH_LOONG64)
++// Same as what "unwinding_records.cc" falls back to on unsupported platforms.
++const intptr_t kReservedUnwindingRecordsSizeBytes = 0;
+ #else
+ #error Unhandled Windows architecture.
+ #endif
+@@ -32,7 +35,7 @@ intptr_t UnwindingRecordsPlatform::SizeInBytes() {
+ // as it is the only client of these methods (e.g., _not_ in gen_snapshot).
+ #if defined(UNWINDING_RECORDS_WINDOWS_HOST)
+ 
+-#if defined(TARGET_ARCH_RISCV64)
++#if defined(TARGET_ARCH_RISCV64) || defined(TARGET_ARCH_LOONG64)
+ 
+ // Same as what "unwinding_records.cc" falls back to on unsupported platforms.
+ 
+@@ -85,7 +88,7 @@ void UnwindingRecordsPlatform::UnregisterDynamicTable(void* p_dynamic_table) {
+   RtlDeleteGrowableFunctionTable(p_dynamic_table);
+ }
+ 
+-#endif  // defined(TARGET_ARCH_RISCV64) ...
++#endif  // defined(TARGET_ARCH_RISCV64) || defined(TARGET_ARCH_LOONG64)
+ 
+ #endif  // defined(UNWINDING_RECORDS_WINDOWS_HOST)
+ 
+diff --git a/runtime/vm/cpu_loong64.cc b/runtime/vm/cpu_loong64.cc
+index a60d03b..1de02d9 100644
+--- a/runtime/vm/cpu_loong64.cc
++++ b/runtime/vm/cpu_loong64.cc
+@@ -10,6 +10,14 @@
+ 
+ #include "vm/cpuinfo.h"
+ 
++#if defined(DART_HOST_OS_MACOS) || defined(DART_HOST_OS_IOS)
++#include <libkern/OSCacheControl.h>
++#endif
++
++#if defined(DART_HOST_OS_WINDOWS)
++#include <processthreadsapi.h>
++#endif
++
+ namespace dart {
+ 
+ void CPU::FlushICache(uword start, uword size) {
+@@ -24,6 +32,12 @@ void CPU::FlushICache(uword start, uword size) {
+   char* beg = reinterpret_cast<char*>(start);
+   char* end = reinterpret_cast<char*>(start + size);
+   __builtin___clear_cache(beg, end);
++#elif defined(DART_HOST_OS_MACOS) || defined(DART_HOST_OS_IOS)
++  sys_icache_invalidate(reinterpret_cast<void*>(start), size);
++#elif defined(DART_HOST_OS_WINDOWS)
++  BOOL result = FlushInstructionCache(
++      GetCurrentProcess(), reinterpret_cast<const void*>(start), size);
++  ASSERT(result != 0);
+ #else
+ #error FlushICache not implemented for this OS
+ #endif
+
+-- 
+2.50.1

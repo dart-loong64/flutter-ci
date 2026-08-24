@@ -14,10 +14,12 @@ const kArmTune = 'arm-tune';
 const kBuildX64GenSnapshot = 'build-x64-gen-snapshot';
 const kBuildARMGenSnapshot = 'build-arm-gen-snapshot';
 const kBuildARM64GenSnapshot = 'build-arm64-gen-snapshot';
+const kBuildLOONG64GenSnapshot = 'build-loong64-gen-snapshot';
 const kBuildRISCV64GenSnapshot = 'build-riscv64-gen-snapshot';
 const kX64GenSnapshotPath = 'x64-gen-snapshot-path';
 const kARMGenSnapshotPath = 'arm-gen-snapshot-path';
 const kARM64GenSnapshotPath = 'arm64-gen-snapshot-path';
+const kLOONG64GenSnapshotPath = 'loong64-gen-snapshot-path';
 const kRISCV64GenSnapshotPath = 'riscv64-gen-snapshot-path';
 const kJobName = 'job-name';
 
@@ -67,7 +69,8 @@ enum Arch {
   riscv64.bits64('RISCV64', 'riscv64', 'riscv64'),
   x64.bits64('X64', 'x64', 'x64'),
   arm.bits32('ARM', 'arm', 'armv7'),
-  arm64.bits64('ARM64', 'arm64', 'aarch64');
+  arm64.bits64('ARM64', 'arm64', 'aarch64'),
+  loong64.bits64('LOONG64', 'loong64', 'loongarch64');
 
   const Arch.bits32(this.ghActionsName, this.flutterCpu, this.ciName) : bitness = Bitness.bits32;
 
@@ -142,6 +145,11 @@ enum Target {
     cpu: CPU.pi5,
     name: 'pi5-64',
     triple: 'aarch64-linux-gnu',
+  ),
+  loong64(
+    arch: Arch.loong64,
+    name: 'loong64-generic',
+    triple: 'loongarch64-linux-gnu',
   ),
   riscv64(
     arch: Arch.riscv64,
@@ -269,6 +277,7 @@ Map<String, Object> genGenSnapshotConfig(
         (runner.os == OS.linux && target.arch == Arch.arm) || runner.arch == Arch.arm,
     kBuildARM64GenSnapshot: runner.os == OS.linux || runner.arch == Arch.arm64,
     kBuildX64GenSnapshot: runner.os == OS.linux || runner.arch == Arch.x64,
+    kBuildLOONG64GenSnapshot: runner.os == OS.linux || runner.arch == Arch.loong64,
     kBuildRISCV64GenSnapshot: runner.os == OS.linux || runner.arch == Arch.riscv64,
 
     kARMGenSnapshotPath: runner.os == OS.linux && target.arch == Arch.arm
@@ -286,6 +295,11 @@ Map<String, Object> genGenSnapshotConfig(
         : runner.os == OS.windows
             ? 'gen_snapshot/gen_snapshot.exe'
             : 'clang_x64/gen_snapshot',
+    kLOONG64GenSnapshotPath: runner.os == OS.linux && target.arch == Arch.loong64
+        ? 'gen_snapshot'
+        : runner.os == OS.windows
+            ? 'gen_snapshot/gen_snapshot.exe'
+            : 'clang_loong64/gen_snapshot',
     kRISCV64GenSnapshotPath: runner.os == OS.linux && target.arch == Arch.riscv64
         ? 'gen_snapshot'
         : runner.os == OS.windows
@@ -378,6 +392,7 @@ Object generateMatrix() {
     kBuildARMGenSnapshot: false,
     kBuildARM64GenSnapshot: false,
     kBuildX64GenSnapshot: false,
+    kBuildLOONG64GenSnapshot: false,
     kBuildRISCV64GenSnapshot: false,
     kBuildUniversal: true,
     kSplitDebugSymbols: false,
