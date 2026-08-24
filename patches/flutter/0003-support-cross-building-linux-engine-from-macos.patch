@@ -53,17 +53,22 @@ diff --git a/engine/src/build/toolchain/linux/BUILD.gn b/engine/src/build/toolch
 index b6db422f..efbd0512 100644
 --- a/engine/src/build/toolchain/linux/BUILD.gn
 +++ b/engine/src/build/toolchain/linux/BUILD.gn
-@@ -33,14 +33,18 @@ if (use_rbe) {
+@@ -33,17 +33,20 @@ if (use_rbe) {
    link_prefix = ""
  }
  
 -if (host_cpu == "arm64") {
 -  rebased_clang_dir =
 -      rebase_path("$buildtools_path/linux-arm64/clang/bin", root_build_dir)
+-} else if (host_cpu == "loong64") {
+-  rebased_clang_dir =
+-      rebase_path("$buildtools_path/linux-loong64/clang/bin", root_build_dir)
 +if (host_os == "linux" && host_cpu == "x64") {
 +  host_dir = "linux-x64"
 +} else if (host_os == "linux" && host_cpu == "arm64") {
 +  host_dir = "linux-arm64"
++} else if (host_os == "linux" && host_cpu == "loong64") {
++  host_dir = "linux-loong64"
 +} else if (host_os == "mac" && host_cpu == "x64") {
 +  host_dir = "mac-x64"
  } else {

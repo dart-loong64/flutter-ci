@@ -34,7 +34,7 @@ diff --git a/engine/src/flutter/BUILD.gn b/engine/src/flutter/BUILD.gn
 index 3b048fa7..093b167a 100644
 --- a/engine/src/flutter/BUILD.gn
 +++ b/engine/src/flutter/BUILD.gn
-@@ -103,11 +103,15 @@ group("flutter") {
+@@ -103,12 +103,16 @@ group("flutter") {
    if (!is_fuchsia && !is_qnx) {
      public_deps += [ "//flutter/lib/snapshot:generate_snapshot_bins" ]
  
@@ -42,8 +42,10 @@ index 3b048fa7..093b167a 100644
 +    if (host_os == "linux" && target_os == "linux") {
        public_deps += [ "$dart_src/runtime/bin:gen_snapshot(//build/toolchain/linux:clang_x64)" ]
        public_deps += [ "$dart_src/runtime/bin:gen_snapshot(//build/toolchain/linux:clang_arm64)" ]
+-      public_deps += [ "$dart_src/runtime/bin:gen_snapshot(//build/toolchain/linux:clang_loong64)" ]
 -      public_deps += [ "$dart_src/runtime/bin:gen_snapshot(//build/toolchain/linux:clang_arm)" ]
 -    }
++      public_deps += [ "$dart_src/runtime/bin:gen_snapshot(//build/toolchain/linux:clang_loong64)" ]
 +      public_deps += [ "$dart_src/runtime/bin:gen_snapshot(//build/toolchain/linux:clang_riscv64)" ]
 +
 +      if (target_cpu == "arm") {
@@ -57,12 +59,13 @@ diff --git a/engine/src/flutter/tools/gn b/engine/src/flutter/tools/gn
 index 848aa38f..db0fdb84 100755
 --- a/engine/src/flutter/tools/gn
 +++ b/engine/src/flutter/tools/gn
-@@ -983,7 +983,7 @@ def parse_args(args):
+@@ -985,8 +985,8 @@ def parse_args(args):
    parser.add_argument('--web', action='store_true', default=False)
    parser.add_argument('--windows', dest='target_os', action='store_const', const='win')
  
--  parser.add_argument('--linux-cpu', type=str, choices=['x64', 'x86', 'arm64', 'arm'])
-+  parser.add_argument('--linux-cpu', type=str, choices=['x64', 'x86', 'arm64', 'arm', 'riscv64'])
+   parser.add_argument(
+-      '--linux-cpu', type=str, choices=['x64', 'x86', 'arm64', 'arm', 'loong64'])
++      '--linux-cpu', type=str, choices=['x64', 'x86', 'arm64', 'arm', 'loong64', 'riscv64'])
    parser.add_argument('--fuchsia-cpu', type=str, choices=['x64', 'arm64'], default='x64')
    parser.add_argument('--windows-cpu', type=str, choices=['x64', 'arm64', 'x86'], default='x64')
    parser.add_argument('--simulator-cpu', type=str, choices=['x64', 'arm64'], default='x64')

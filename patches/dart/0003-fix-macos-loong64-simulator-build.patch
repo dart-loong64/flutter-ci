@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Flutter CI <flutter-ci@example.invalid>
+Date: Wed, 2 Sep 2026 00:00:00 +0800
+Subject: [PATCH] fix: macOS Loong64 simulator build
+
+On macOS, intptr_t and int64_t are distinct types and uintx_t does not use
+the same printf format as unsigned long. Keep the simulator declaration and
+definition consistent and use Dart's portable pointer format macros.
+---
+ runtime/vm/simulator_loong64.cc | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/runtime/vm/simulator_loong64.cc b/runtime/vm/simulator_loong64.cc
+index 8b2ece5..bf5862c 100644
+--- a/runtime/vm/simulator_loong64.cc
++++ b/runtime/vm/simulator_loong64.cc
+@@ -927,7 +927,7 @@ template <typename type>
+ type Simulator::MemoryRead(uintx_t address, Register base) {
+   // Fault on null pointer dereferences
+   if (IsIllegalAddress(address)) {
+-    FATAL("Null pointer read at 0x%lx, pc=0x%lx", address, pc_);
++    FATAL("Null pointer read at 0x%" Px64 ", pc=0x%" Px, address, pc_);
+   }
+   return memory_.Load<type>(address);
+ }
+@@ -935,7 +935,7 @@ type Simulator::MemoryRead(uintx_t address, Register base) {
+ template <typename type>
+ void Simulator::MemoryWrite(uintx_t address, type value, Register base) {
+   if (IsIllegalAddress(address)) {
+-    FATAL("Null pointer write at 0x%lx, pc=0x%lx", address, pc_);
++    FATAL("Null pointer write at 0x%" Px64 ", pc=0x%" Px, address, pc_);
+   }
+   memory_.Store<type>(address, value);
+ }
+@@ -952,11 +952,11 @@ Simulator* Simulator::Current() {
+   return simulator;
+ }
+ 
+-int64_t Simulator::Call(int64_t entry,
+-                        int64_t parameter0,
+-                        int64_t parameter1,
+-                        int64_t parameter2,
+-                        int64_t parameter3,
++int64_t Simulator::Call(intptr_t entry,
++                        intptr_t parameter0,
++                        intptr_t parameter1,
++                        intptr_t parameter2,
++                        intptr_t parameter3,
+                         bool fp_return,
+                         bool fp_args) {
+   const intptr_t sp_before_call = get_register(SPREG);
+
+-- 
+2.50.1
